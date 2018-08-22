@@ -31,6 +31,9 @@ var Comment = createReactClass({
 		// console.log('editing');
 	},
 	save: function() {
+		// referencja do elementu textarea (jego wartości)
+		var val = this.refs.newText.value;
+		console.log(val);
 		this.setState({editing: false});
 	},
 	remove: function() {
@@ -40,6 +43,7 @@ var Comment = createReactClass({
 		return (
 			// w React używamy clasName, by zapisać klase w html, ponieważ słowo 'class', jest już zajęte w JS
 			// za pomoca this.props.children, dostaniemy sie do dzieci elementu Comment
+			// Z dokumentacji "Refs provide a way to access DOM nodes or React elements created in the render method".
 			<div className="comments">
 				<p>{this.props.children}</p>
 				<button onClick={this.edit}>Edytuj</button>
@@ -47,10 +51,12 @@ var Comment = createReactClass({
 			</div>
 		)
 	},
+	// Za pomocą 'ref' dostnaiemy się do referencji naszego elementu child, w tym przypadku textarea
+	// Ref jest spoko, bo nie trzeba robić żadnego e.target, tylko wie gdzie dana zmiana została wprowadzona
 	renderForm: function() {
 		return (
 			<div className="comments">
-				<textarea defaultValue={this.props.children}></textarea>
+				<textarea ref="newText" defaultValue={this.props.children}></textarea>
 				<button onClick={this.save}>Zapisz</button>
 			</div>
 		)
@@ -65,12 +71,49 @@ var Comment = createReactClass({
 });
 
 
-ReactDOM.render(
-	<div>
-		<Comment>Jeden</Comment>
-		<Comment>Dwa</Comment>
-		<Comment>Trzy</Comment>
-	</div>, document.getElementById('container'));
+// Stworzymy taki komponent, w którym umieścimy nasz Comment. Mamy wtedy większa kontrolę nad naszą aplikacją 
+var Board = createReactClass({
+
+	getInitialState: function() {
+		return {
+			comments: [
+				'pierwszy',
+				'drugi',
+				'trzeci'
+			]
+		}
+	},
+
+	eachComment: function(text, i) {
+		return (<Comment key={i}>{text}</Comment>);
+	},
+
+	removeComment: function(i) {
+		var arr = this.state.comments;
+		// splice - tak usuniemy komentarz, pierwszy argument "i", od jakeigo momentu chcemy zacząć usuwać 
+		// drugi arguemnt "1", ile elemntów chcemy usunąć
+		arr.splice(i, 1);
+		this.setState({comments: arr});
+	},
+
+	editComment: function(i, newText) {
+		var arr = this.state.comments;
+		arr[i] = newText
+		this.setState({comments: arr});
+	},
+
+	render: function() {
+		return (
+			<div>
+				{
+					this.state.comments.map(this.eachComment)
+				}
+			</div>
+		);
+	}
+});
+
+ReactDOM.render(<Board />, document.getElementById('container'));
 
 // Notaki:
 // Różnica pomiędzy State i Props:
